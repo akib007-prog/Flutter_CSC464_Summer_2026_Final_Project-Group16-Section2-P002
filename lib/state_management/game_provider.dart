@@ -65,6 +65,44 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Resets the board only. startingPlayer is left untouched, so the same
+  // player who started last time starts again.
+  void resetBoard() {
+    board = List.filled(9, "");
+    currentPlayer = startingPlayer;
+    winner = null;
+    isTie = false;
+    notifyListeners();
+  }
+
+  // Explicitly toggles who starts next, then clears the board so the new
+  // starting player can move first. Kept separate from resetBoard() so a
+  // player can reset without switching, or switch as its own action.
+  void switchStartingPlayer() {
+    startingPlayer = startingPlayer == "X" ? "O" : "X";
+    board = List.filled(9, "");
+    currentPlayer = startingPlayer;
+    winner = null;
+    isTie = false;
+    notifyListeners();
+  }
+
+  // Full reset for leaving to Home: clears the board AND the scoreboard,
+  // since a new session on Home may involve different players entirely.
+  // Player names are intentionally left as-is; Home screen overwrites them
+  // when the next match starts.
+  void resetSession() {
+    board = List.filled(9, "");
+    startingPlayer = "X";
+    currentPlayer = "X";
+    winner = null;
+    isTie = false;
+    xWins = 0;
+    oWins = 0;
+    ties = 0;
+    notifyListeners();
+  }
+
   Future<void> saveMatch() async {
     final match = MatchModel(
       player1: player1Name,
