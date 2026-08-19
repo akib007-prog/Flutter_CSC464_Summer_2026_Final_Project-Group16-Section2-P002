@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state_management/game_provider.dart';
 import 'game_board_screen.dart';
+import 'home_screen.dart';
 
 class ResultScreen extends StatelessWidget {
   const ResultScreen({super.key});
@@ -47,6 +48,29 @@ class ResultScreen extends StatelessWidget {
                     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const GameBoardScreen()));
                   },
                   child: const Text("Play Again", style: TextStyle(color: Colors.white, fontSize: 16)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF6C63FF),
+                    side: const BorderSide(color: Color(0xFF6C63FF)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    // Full reset (board + scoreboard) since Home may lead to
+                    // a new match with different players entirely.
+                    context.read<GameProvider>().resetSession();
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomeScreen()),
+                      (route) => false,
+                    );
+                  },
+                  child: const Text("Home", style: TextStyle(fontSize: 16)),
                 ),
               ),
             ],
