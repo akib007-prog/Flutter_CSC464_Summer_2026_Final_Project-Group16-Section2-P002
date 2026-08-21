@@ -14,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final p1Controller = TextEditingController();
   final p2Controller = TextEditingController();
+  bool _isLogoutDialogOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +30,12 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: "Match History",
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MatchHistoryScreen())),
           ),
-          IconButton(
+                    IconButton(
             icon: const Icon(Icons.logout),
             tooltip: "Logout",
             onPressed: () {
+              if (_isLogoutDialogOpen) return;
+              _isLogoutDialogOpen = true;
               showDialog(
                 context: context,
                 builder: (dialogContext) => AlertDialog(
@@ -41,7 +44,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   content: const Text("Are you sure you want to log out?"),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(dialogContext),
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        _isLogoutDialogOpen = false;
+                      },
                       child: const Text("Cancel"),
                     ),
                     ElevatedButton(
@@ -49,9 +55,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         backgroundColor: const Color(0xFF6C63FF),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         Navigator.pop(dialogContext);
-                        context.read<app_auth.AuthProvider>().signOut();
+                        await context.read<app_auth.AuthProvider>().signOut();
+                        _isLogoutDialogOpen = false;
                       },
                       child: const Text("Logout", style: TextStyle(color: Colors.white)),
                     ),
