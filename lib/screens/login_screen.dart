@@ -12,7 +12,28 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passController = TextEditingController();
+  final passFocusNode = FocusNode();
   bool isLoading = false;
+
+  Future<void> _handleLogin() async {
+    if (isLoading) return;
+    setState(() => isLoading = true);
+    final success = await context.read<app_auth.AuthProvider>()
+        .signIn(emailController.text.trim(), passController.text.trim());
+    setState(() => isLoading = false);
+    if (!success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Login failed. Check email/password, or sign up first.")));
+    }
+  }
+
+  @override
+  void dispose() {
+    passFocusNode.dispose();
+    emailController.dispose();
+    passController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +65,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     TextField(
                       controller: emailController,
+                      textInputAction: TextInputAction.next,
+                      onSubmitted: (_) => FocusScope.of(context).requestFocus(passFocusNode),
                       decoration: InputDecoration(
                         labelText: "Email",
                         prefixIcon: const Icon(Icons.email_outlined),
@@ -53,7 +76,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: passController,
+                      focusNode: passFocusNode,
                       obscureText: true,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => _handleLogin(),
                       decoration: InputDecoration(
                         labelText: "Password",
                         prefixIcon: const Icon(Icons.lock_outline),
@@ -69,16 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           backgroundColor: const Color(0xFF6C63FF),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        onPressed: isLoading ? null : () async {
-                          setState(() => isLoading = true);
-                          final success = await context.read<app_auth.AuthProvider>()
-                              .signIn(emailController.text.trim(), passController.text.trim());
-                          setState(() => isLoading = false);
-                          if (!success && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Login failed. Check email/password, or sign up first.")));
-                          }
-                        },
+                        onPressed: isLoading ? null : _handleLogin,
                         child: isLoading
                             ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                             : const Text("Login", style: TextStyle(color: Colors.white, fontSize: 16)),
